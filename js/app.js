@@ -646,15 +646,31 @@
           sortedIds("templates")
             .map(function (id) {
               var t = S.templates[id];
+              // O cartão é uma <div> (e não um <button>) porque um botão
+              // não pode ter outros botões dentro dele (lápis e lixeira).
               return (
-                '<button class="card" data-act="open-tpl" data-id="' +
+                '<div class="card" role="button" tabindex="0" data-act="open-tpl" data-id="' +
                 esc(id) +
                 '"><div class="t"><span>' +
                 esc(t.name) +
+                "</span>" +
+                '<span class="cardr">' +
+                (S.readOnly
+                  ? ""
+                  : '<button class="mv" data-act="rename-tpl" data-id="' +
+                    esc(id) +
+                    '" aria-label="Renomear modelo">' +
+                    ICON.pen +
+                    "</button>" +
+                    '<button class="mv delmv" data-act="del-tpl" data-id="' +
+                    esc(id) +
+                    '" aria-label="Excluir modelo">' +
+                    ICON.trash +
+                    "</button>") +
                 "</span></div>" +
                 '<div class="s">' +
                 t.items.length +
-                " itens</div></button>"
+                " itens</div></div>"
               );
             })
             .join("") +
@@ -1087,6 +1103,39 @@
       }
     });
   }
+  function deleteTpl(id) {
+    var t = S.templates[id];
+    if (!t || S.readOnly) return;
+    confirmDialog(
+      "Excluir modelo?",
+      "O modelo “" +
+        t.name +
+        "” será apagado. As listas já geradas a partir dele continuam.",
+      "Excluir",
+      true,
+    ).then(function (ok) {
+      if (!ok) return;
+      removeDoc("templates", id);
+      if (S.view === "tpl") {
+        S.view = "home";
+        S.tab = "templates";
+        window.scrollTo(0, 0);
+      }
+      render();
+      toast("Modelo excluído");
+    });
+  }
+  function renameTpl(id) {
+    var t = S.templates[id];
+    if (!t || S.readOnly) return;
+    promptDialog("Renomear modelo", t.name).then(function (v) {
+      if (v && S.templates[id]) {
+        S.templates[id].name = v.slice(0, 120);
+        markDirty("templates", id);
+        render();
+      }
+    });
+  }
   function listText(l) {
     var picks = l.items.filter(function (it) {
       return isPick(it) && !it.done;
@@ -1288,22 +1337,7 @@
             markDirty("templates", id);
             S.openId = id;
             render();
-          } else if (m === "del")
-            confirmDialog(
-              "Excluir modelo?",
-              "O modelo “" +
-                t.name +
-                "” será apagado. As listas já geradas a partir dele continuam.",
-              "Excluir",
-              true,
-            ).then(function (ok) {
-              if (ok) {
-                removeDoc("templates", S.openId);
-                S.view = "home";
-                S.tab = "templates";
-                render();
-              }
-            });
+          } else if (m === "del") deleteTpl(S.openId);
         };
       },
     );
@@ -1443,6 +1477,10 @@
       renameList(id || S.openId);
     } else if (act === "del-list") {
       deleteList(id || S.openId);
+    } else if (act === "rename-tpl") {
+      renameTpl(id || S.openId);
+    } else if (act === "del-tpl") {
+      deleteTpl(id || S.openId);
     } else if (act === "del-done") {
       deleteDoneLists();
     } else if (act === "edit-items") {
