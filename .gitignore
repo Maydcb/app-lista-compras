@@ -1,0 +1,17 @@
+# Arquivos de sistema do Windows
+Thumbs.db
+desktop.ini
+
+# Arquivos de sistema do macOS
+.DS_Store
+
+# Configurações de editores
+.vscode/
+.idea/
+
+# Dependências e logs (para quando o projeto crescer)
+node_modules/
+*.log
+
+# Anotações pessoais e arquivos temporários
+CLAUDE.md
