@@ -11,6 +11,7 @@
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V4h6v3"/></svg>',
     pen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>',
     down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+    cart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.6 12.2a1.8 1.8 0 001.8 1.4h8.4a1.8 1.8 0 001.8-1.4L21.5 7H6"/></svg>',
   };
   var COMMON = [
     "Arroz",
@@ -69,6 +70,7 @@
     openId: null,
     filter: "all",
     editItems: false,
+    cartOpen: true, // seção "No carrinho" aberta ou recolhida
     loaded: false,
     mode: "starting",
     readOnly: false,
@@ -482,9 +484,23 @@
     }, 0);
   });
 
-  function header(title, back, menu, renameAct) {
-    var t =
-      renameAct && !S.readOnly
+  function header(title, back, menu, renameAct, brand) {
+    var t = brand
+      ? // Cabeçalho da tela inicial: ícone do app + título + data de hoje
+        '<div class="brand"><span class="logo">' +
+        ICON.cart +
+        "</span><div><h1>" +
+        esc(title) +
+        "</h1><small>" +
+        esc(
+          new Date().toLocaleDateString("pt-BR", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+          }),
+        ) +
+        "</small></div></div>"
+      : renameAct && !S.readOnly
         ? '<h1><button class="titlebtn" data-act="' +
           renameAct +
           '" title="Renomear"><span>' +
@@ -536,7 +552,7 @@
     });
   }
   function viewHome() {
-    var h = header("Lista de Compras");
+    var h = header("Lista de Compras", false, null, null, true);
     var nl = Object.keys(S.lists).length,
       nt = Object.keys(S.templates).length;
     h +=
@@ -577,15 +593,6 @@
         var nDone = Object.keys(S.lists).filter(function (id) {
           return isComplete(S.lists[id]);
         }).length;
-        if (nDone && !S.readOnly)
-          h +=
-            '<div class="donebar"><span>' +
-            nDone +
-            " lista" +
-            (nDone > 1 ? "s" : "") +
-            " concluída" +
-            (nDone > 1 ? "s" : "") +
-            '</span><button class="btn small danger" data-act="del-done">Excluir concluídas</button></div>';
         h +=
           '<div class="cards">' +
           sortedIds("lists")
@@ -631,6 +638,18 @@
             })
             .join("") +
           "</div>";
+        // Ação secundária e destrutiva: discreta, no fim da página
+        if (nDone && !S.readOnly)
+          h +=
+            '<div class="cleanup"><button class="linkbtn" data-act="del-done">' +
+            ICON.trash +
+            "Excluir " +
+            nDone +
+            " lista" +
+            (nDone > 1 ? "s" : "") +
+            " concluída" +
+            (nDone > 1 ? "s" : "") +
+            "</button></div>";
       }
     } else {
       if (!nt) {
@@ -683,13 +702,32 @@
     var l = S.lists[S.openId],
       st = listStats(l),
       ro = S.readOnly ? " disabled" : "";
-    var h = header(l.name, true, "list-menu", "rename-list");
+    // Cabeçalho + barra de progresso ficam "grudados" no topo ao rolar
+    var h =
+      '<div class="stickyhead">' +
+      header(l.name, true, "list-menu", "rename-list") +
+      '<div class="prog"><div class="bar"><i id="pbar" style="width:' +
+      st.pct +
+      '%"></i></div><span id="ptxt">' +
+      progText(st) +
+      "</span></div></div>";
     var items =
       S.filter === "pick"
         ? l.items.filter(function (it) {
             return isPick(it) || it.done;
           })
         : l.items;
+    // Fora do modo de edição, os itens já pegos descem para "No carrinho"
+    var todo = S.editItems
+        ? items
+        : items.filter(function (it) {
+            return !it.done;
+          }),
+      inCart = S.editItems
+        ? []
+        : items.filter(function (it) {
+            return it.done;
+          });
     h +=
       '<div class="toolbar"><div class="seg">' +
       '<button data-act="filter" data-v="all" class="' +
@@ -708,15 +746,9 @@
           (S.editItems ? "Concluir edição" : "Editar itens") +
           "</button>") +
       "</div>";
-    h +=
-      '<div class="prog"><div class="bar"><i id="pbar" style="width:' +
-      st.pct +
-      '%"></i></div><span id="ptxt">' +
-      progText(st) +
-      "</span></div>";
     h += '<div id="donebox">' + doneBox(l) + "</div>";
     h +=
-      '<div class="table"><div class="thead"><span></span><span>Comprar</span><span>Tem em casa</span><span>Pegar</span></div>';
+      '<div class="table"><div class="thead"><span></span><span>Comprar</span><span>Casa</span><span class="hpick">Pegar</span></div>';
     if (!items.length) {
       h +=
         '<div class="hiddeninfo">' +
@@ -725,8 +757,7 @@
           : "Lista vazia. Adicione itens abaixo.") +
         "</div>";
     }
-    h += items
-      .map(function (it) {
+    function rowHtml(it) {
         var cls =
           "row" +
           (it.done ? " done" : "") +
@@ -778,8 +809,21 @@
           ro +
           "></div>"
         );
-      })
-      .join("");
+    }
+    h += todo.map(rowHtml).join("");
+    if (inCart.length) {
+      h +=
+        '<button class="carthead' +
+        (S.cartOpen ? " open" : "") +
+        '" data-act="toggle-cart">' +
+        ICON.cart +
+        "<span>No carrinho (" +
+        inCart.length +
+        ")</span>" +
+        ICON.down +
+        "</button>";
+      if (S.cartOpen) h += inCart.map(rowHtml).join("");
+    }
     if (!S.readOnly)
       h +=
         '<div class="addrow"><input data-add="list" placeholder="Adicionar item…" enterkeyhint="done"><button class="btn primary small" data-act="add-list">Adicionar</button></div>';
@@ -790,6 +834,11 @@
     if (!st.total) return "";
     if (st.pick > 0) return st.got + " de " + st.pick + " no carrinho";
     return st.done + " de " + st.total + " riscados";
+  }
+  // PWA: registra o "service worker" que permite abrir o app offline.
+  // Só funciona em http(s), não ao abrir o arquivo direto do disco (file://).
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
   }
   function doneBox(l) {
     if (S.readOnly || !isComplete(l)) return "";
@@ -1493,12 +1542,11 @@
       if (i < 0) return;
       l.items[i].done = !l.items[i].done;
       markDirty("lists", S.openId);
-      var row = $app.querySelector('[data-row="' + id + '"]');
-      if (row) {
-        row.classList.toggle("done", l.items[i].done);
-        row.classList.toggle("pick", isPick(l.items[i]) && !l.items[i].done);
-        updateProgress();
-      } else render();
+      // Redesenha a tela para o item mudar de seção (lista ↔ "No carrinho")
+      render();
+    } else if (act === "toggle-cart") {
+      S.cartOpen = !S.cartOpen;
+      render();
     } else if (act === "del-item") {
       var l2 = S.lists[S.openId],
         j = findItem(l2.items, id);

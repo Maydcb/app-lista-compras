@@ -314,6 +314,60 @@ button {
   align-self: center;
 }
 
+/* Cabeçalho da tela inicial */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.brand .logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.brand .logo svg {
+  width: 24px;
+  height: 24px;
+}
+.brand small {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.brand small::first-letter {
+  text-transform: uppercase;
+}
+/* "Excluir concluídas": link discreto no fim da página */
+.cleanup {
+  text-align: center;
+  margin-top: 18px;
+}
+.linkbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--muted);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+.linkbtn svg {
+  width: 16px;
+  height: 16px;
+}
+.linkbtn:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
 .empty {
   text-align: center;
   color: var(--muted);
@@ -334,17 +388,30 @@ button {
   margin: 4px 0 10px;
   flex-wrap: wrap;
 }
+/* Cabeçalho + progresso fixos no topo da tela da lista */
+.stickyhead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg);
+  margin-bottom: 8px;
+}
+.stickyhead .top {
+  position: static;
+}
 .prog {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--muted);
-  margin-bottom: 12px;
+  padding-bottom: 10px;
 }
 .prog .bar {
   flex: 1;
   margin: 0;
+  height: 8px;
 }
 .table {
   background: var(--card);
@@ -375,6 +442,9 @@ button {
 .thead span:nth-child(4) {
   text-align: center;
   line-height: 1.15;
+}
+.thead .hpick {
+  color: var(--accent);
 }
 .row {
   min-height: 50px;
@@ -453,6 +523,57 @@ textarea:focus {
 }
 .qty::placeholder {
   color: var(--line);
+}
+/* "Tem em casa": informação de apoio, mais apagada */
+.qty[data-f="have"] {
+  background: transparent;
+  border-style: dashed;
+  color: var(--muted);
+  font-weight: 400;
+}
+/* "Pegar": a informação principal no mercado, em destaque */
+.qty[data-f="get"] {
+  font-weight: 700;
+}
+.qty[data-f="get"]:not(:placeholder-shown) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.row.done .qty[data-f="get"] {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--muted);
+}
+/* Separador da seção "No carrinho" */
+.carthead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--line2);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  text-align: left;
+}
+.carthead span {
+  flex: 1;
+}
+.carthead svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.carthead svg:last-child {
+  transition: transform 0.15s;
+  transform: rotate(-90deg);
+}
+.carthead.open svg:last-child {
+  transform: none;
 }
 .txt {
   width: 100%;
