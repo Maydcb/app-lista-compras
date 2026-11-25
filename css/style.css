@@ -1,28 +1,30 @@
+/* Paleta baseada no azul #0A7ACE (tema claro) */
 :root {
-  --bg: #f5f3ee;
+  --bg: #f3f6f9;
   --card: #ffffff;
-  --ink: #1d221f;
-  --muted: #6a706b;
-  --line: #e5e1d7;
-  --line2: #efece4;
-  --accent: #2e7a4d;
+  --ink: #1a2330;
+  --muted: #627080;
+  --line: #dde4ec;
+  --line2: #eaeff5;
+  --accent: #0a7ace;
   --accent-ink: #ffffff;
-  --accent-soft: #e2f0e6;
+  --accent-soft: #e3f0fb;
   --danger: #b4441a;
   --danger-soft: #fbe9e1;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #141715;
-    --card: #1d211e;
-    --ink: #e9ece9;
-    --muted: #9aa29c;
-    --line: #2d332f;
-    --line2: #252a26;
-    --accent: #5cbf83;
-    --accent-ink: #0d1a12;
-    --accent-soft: #1f3327;
+    /* No escuro, um azul mais claro para manter o contraste */
+    --bg: #11161c;
+    --card: #19202a;
+    --ink: #e8edf3;
+    --muted: #97a3b0;
+    --line: #2a3441;
+    --line2: #212a35;
+    --accent: #4aa8ee;
+    --accent-ink: #061a2b;
+    --accent-soft: #14304a;
     --danger: #f08a5d;
     --danger-soft: #3a2219;
     --shadow: none;

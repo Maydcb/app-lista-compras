@@ -1,0 +1,10 @@
+# Fim de linha: sempre LF (padrão da web e do Linux, onde roda o GitHub Pages).
+# Isso vale para qualquer computador que baixar o projeto, independente da
+# configuração de cada um, e acaba com o aviso "LF will be replaced by CRLF".
+* text=auto eol=lf
+
+# Arquivos binários: o Git nunca deve mexer no conteúdo deles
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
